@@ -1,0 +1,93 @@
+body{
+    margin: 50px;
+    align-content: center;
+    background-color: #d1ecfc;
+}
+.form-container {
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  
+  .form-container form {
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  label{
+    display: inline-block;
+    clear: left;
+    width: 200px;
+    text-align: right;
+    margin-right: 20px;
+    margin-left: -15%;
+    color: darkblue;
+}
+  .textbox {
+    width: 200px;
+    display: inline-block;
+    border-radius: 0;
+    border-width: 0.5px;
+    height: 20px;
+    border-color: aqua;
+  }
+  .buttonSubmit{
+    color: darkblue;
+    /* text-shadow: black 1px 1px; */
+    background-color: #79c6f3;
+    border: none;
+    height: 30px;
+    width: 100px;
+  }
+  .table-container {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .table-container table {
+    width: 70%;
+    border-collapse: collapse;
+  }
+  
+  .table-container th,
+  .table-container td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid aqua;
+    width: 33%;
+    color: darkblue;
+  }
+  
+  .table-container th {
+    font-weight: bold;
+  }
+  
+  .button-container button {
+    margin-right: 5px;
+    color: white;
+    border: none;
+    height: 30px;
+    width: 100px;
+  }
+  .button-container button.available{
+    background-color: green;
+  }
+  .button-container button.not-available{
+    background-color: red;
+  }
+  .delete-button{
+    background-color: red;
+    color: white;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    padding: 2px;
+    border: 0px;
+  }
+  .edit-button{
+    background-color: #075f92;
+    border: 0px;
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
