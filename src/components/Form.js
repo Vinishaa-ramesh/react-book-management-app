@@ -33,11 +33,15 @@ function Form(){
 
     const addBook = (e) => {
         e.preventDefault()
-        if(formData.bookName.trim()==''||formData.authorName.trim()=='') return;
+        if(formData.bookName.trim()=='') return;
+        let authName = formData.authorName.trim();
+        if(authName===''){
+          authName = 'N/A'
+        }
         const checkBookName = bookList.filter((book) => {
           const bookName = book.bookName.toLowerCase()
           const authorName = book.authorName.toLowerCase()
-          return (formData.bookName.toLowerCase()==bookName && formData.authorName.toLowerCase()==authorName)
+          return (formData.bookName.toLowerCase()==bookName && authName.toLowerCase()==authorName)
         })
         // console.log(checkBookName)
         // console.log(bookList)
@@ -48,7 +52,7 @@ function Form(){
         }
         const newBook = {
             bookName: formData.bookName,
-            authorName: formData.authorName,
+            authorName: authName,
             availability: formData.availability
         }
         setBookList((prevList) => [...prevList, newBook])
