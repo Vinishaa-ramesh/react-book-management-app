@@ -33,8 +33,19 @@ function Form(){
 
     const addBook = (e) => {
         e.preventDefault()
-        setEditMode(0);
         if(formData.bookName.trim()==''||formData.authorName.trim()=='') return;
+        const checkBookName = bookList.filter((book) => {
+          const bookName = book.bookName.toLowerCase()
+          const authorName = book.authorName.toLowerCase()
+          return (formData.bookName.toLowerCase()==bookName && formData.authorName.toLowerCase()==authorName)
+        })
+        // console.log(checkBookName)
+        // console.log(bookList)
+        if(checkBookName.length!=0){
+          alert("Book already present");
+          setFormData({bookName:'',authorName:'',availability:true})
+          return;
+        }
         const newBook = {
             bookName: formData.bookName,
             authorName: formData.authorName,
@@ -42,6 +53,7 @@ function Form(){
         }
         setBookList((prevList) => [...prevList, newBook])
         setFormData({bookName:'',authorName:'',availability:true})
+        setEditMode(0);
     }
 
     const toggleAvailability = (index) => {
