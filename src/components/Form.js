@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import { useEffect } from 'react';
-import './Form.css'
+// import './Form.css'
+import './newForm.css'
+import { Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 
 function Form(){
     const [formData, setFormData] = useState({
@@ -112,105 +114,129 @@ function Form(){
 
       return (
         <div>
-          <div className="form-container">
-            <form onSubmit={addBook}>
-              <label htmlFor="bookName">Book Name{' '}</label>
-              <input
-                type="text"
-                id="bookName"
-                className='textbox'
-                value={formData.bookName}
-                onChange={handleChange}
-              />
-              <br/><br/>
-              <label htmlFor='authorName'>Author Name{' '}</label>
-              <input
-                type="text"
-                id="authorName"
-                className='textbox'
-                value={formData.authorName}
-                onChange={handleChange}
-              />
-              <br/><br/>
-              <button type="submit" className='buttonSubmit'>
-                {editMode == 1 ? 'Update Book' : 'Add Book'}
-              </button>
-            </form>
-          </div>
-          <div className="search-container">
-            <input type="text" placeholder="Search Books" onChange={handleSearch} />
-          </div>
-          {bookList.length > 0 && (
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Book</th>
-                    <th>Author</th>
-                    <th>Availability</th>
-                    <th></th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-            {filteredBookList.length > 0
-              ? filteredBookList.map((book, index) => (
-                  (book.bookName!='' && <tr key={index}>
-                    <td>{book.bookName}</td>
-                    <td>{book.authorName}</td>
-                    <td>
-                      <div className="button-container">
-                        <button
-                          className={book.availability ? 'available' : 'not-available'}
-                          onClick={() => toggleAvailability(index)}
-                        >
-                          {book.availability ? 'Available' : 'Not Available'}
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <button className="delete-button" onClick={() => removeBook(index)}>
-                        X
-                      </button>
-                    </td>
-                    <td>
-                      <button className="edit-button" onClick={() => editBook(index)}>
-                        /
-                      </button>
-                    </td>
-                  </tr>
-                )))
-              : bookList.map((book, index) => (
-                  <tr key={index}>
-                    <td>{book.bookName}</td>
-                    <td>{book.authorName}</td>
-                    <td>
-                      <div className="button-container">
-                        <button
-                          className={book.availability ? 'available' : 'not-available'}
-                          onClick={() => toggleAvailability(index)}
-                        >
-                          {book.availability ? 'Available' : 'Not Available'}
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <button className="delete-button" onClick={() => removeBook(index)}>
-                        X
-                      </button>
-                    </td>
-                    <td>
-                      <button className="edit-button" onClick={() => editBook(index)}>
-                        /
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-          </tbody>
-              </table>
-            </div>
-          )}
+        <Typography variant="h2">Book management</Typography>
+        <div className="form-container">
+          <form onSubmit={addBook}>
+            <TextField
+              type="text"
+              id="bookName"
+              label="Book Name"
+              className="textbox"
+              value={formData.bookName}
+              onChange={handleChange}
+            />
+            <br /><br />
+            <TextField
+              type="text"
+              id="authorName"
+              label="Author Name"
+              className="textbox"
+              value={formData.authorName}
+              onChange={handleChange}
+            />
+            <br /><br />
+            <Button type="submit" variant="contained" className="buttonSubmit">
+              {editMode === 1 ? 'Update Book' : 'Add Book'}
+            </Button>
+          </form>
         </div>
+        <div className="search-container">
+          <TextField
+            variant='standard'
+            type="text"
+            label="Search Books"
+            placeholder="Search Books"
+            onChange={handleSearch}
+          />
+        </div>
+        {bookList.length > 0 && (
+          <div className="table-container">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Book</TableCell>
+                  <TableCell>Author</TableCell>
+                  <TableCell>Availability</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredBookList.length > 0
+                  ? filteredBookList.map((book, index) => (
+                      book.bookName !== '' && (
+                        <TableRow key={index}>
+                          <TableCell>{book.bookName}</TableCell>
+                          <TableCell>{book.authorName}</TableCell>
+                          <TableCell>
+                            <div className="button-container">
+                              <Button
+                                className={book.availability ? 'available' : 'not-available'}
+                                onClick={() => toggleAvailability(index)}
+                              >
+                                {book.availability ? 'Available' : 'Not Available'}
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              className="delete-button"
+                              onClick={() => removeBook(index)}
+                            >
+                              X
+                            </Button>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              className="edit-button"
+                              onClick={() => editBook(index)}
+                            >
+                              /
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    ))
+                  : bookList.map((book, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{book.bookName}</TableCell>
+                        <TableCell>{book.authorName}</TableCell>
+                        <TableCell>
+                          <div className="button-container">
+                            <Button
+                              variant='contained'
+                              className={book.availability ? 'available' : 'not-available'}
+                              onClick={() => toggleAvailability(index)}
+                            >
+                              {book.availability ? 'Available' : 'Not Available'}
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant='text'
+                            className="delete-button"
+                            onClick={() => removeBook(index)}
+                          >
+                            delete
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant='text'
+                            className="edit-button"
+                            onClick={() => editBook(index)}
+                          >
+                            edit
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
       );      
 }
 

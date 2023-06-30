@@ -1,0 +1,67 @@
+body {
+    margin: 50px;
+    background-color: #d1ecfc;
+  }
+  h2{
+    color: blue;
+    font-family: "Gill Sans Extrabold", sans-serif;
+    font-weight: 500px;
+  }
+  
+  .form-container {
+    margin: 30px;
+    /* display: flex; */
+  }
+
+  .form-container form{
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+  .search-container{
+    margin-bottom: 30px;
+  }
+  .search-container TextField{
+    background-color: white;
+  }
+
+  .buttonSubmit {
+    color: darkblue;
+    background-color: #79c6f3;
+    font-size: 13px;
+  }
+  
+  .table-container th,
+  .table-container td {
+    padding: 8px;
+    /* text-align: center; */
+    border-bottom: 1px solid aqua;
+    width: 33%;
+    color: darkblue;
+  }
+  
+  .table-container th {
+    font-weight: bold;
+  }
+  
+  .button-container button {
+    color: white;
+    font-size: 10px;
+  }
+  
+  .button-container button.available {
+    background-color: green;
+  }
+  
+  .button-container button.not-available {
+    background-color: red;
+  }
+  
+  .delete-button {
+    color: red;
+  }
+  
+  .edit-button {
+    color: #075f92;
+  }
+  
