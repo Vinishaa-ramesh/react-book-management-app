@@ -73,3 +73,10 @@ body {
     text-align: right;
     font-size: 12px;
   }
+  .filter-container{
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    height: 50px;
+    vertical-align: middle;
+  }

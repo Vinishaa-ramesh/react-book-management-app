@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, InputLabel, Select, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
 import './newForm.css'
 
@@ -12,61 +12,71 @@ function Form() {
 
   const [filteredBookList, setFilteredBookList] = useState([]);
   const [editMode, setEditMode] = useState(false);
+  const [uniqueAuthors, setUniqueAuthors] = useState([]);
+  const [selectedAuthor, setSelectedAuthor] = useState('');
 
   useEffect(() => {
     localStorage.setItem('bookList', JSON.stringify(bookList));
+  }, [bookList]);
+
+  useEffect(() => {
+    const authors = [...new Set(bookList.map((book) => book.authorName))];
+    setUniqueAuthors(authors);
   }, [bookList]);
 
   const formik = useFormik({
     initialValues: {
       bookName: '',
       authorName: '',
-      availability: true
+      availability: true,
+      date: ''
     },
     onSubmit: (values, { resetForm }) => {
-      const checkBookName = bookList.filter((book) => {
+        const checkBookName = bookList.filter((book) => {
         const bookName = book.bookName.toLowerCase();
         const authorName = book.authorName.toLowerCase();
         return (
           values.bookName.toLowerCase() === bookName
         );
       });
-      
       if (checkBookName.length !== 0) {
-          if (checkBookName[0].authorName === 'N/A') {
-        if(window.confirm('Replace author name?')){
-            const newBook = {
-              bookName: values.bookName,
-              authorName: values.authorName,
-              availability: values.availability
-            };
-            setBookList((prevList) => {
-              const updatedList = prevList.filter((book) => {
-                return (
-                  book.bookName.toLowerCase() !== checkBookName[0].bookName.toLowerCase()
-                );
-              });
-              return [...updatedList, newBook];
-            });
-            resetForm();
-            return;
-        }
-        else{
-          resetForm();
-          return;
-        }
-      }
+          if (!checkBookName[0].authorName.toLowerCase().localeCompare('n/a')) {
+            if(window.confirm('Replace author name?')){
+                const newBook = {
+                  bookName: values.bookName,
+                  authorName: (values.authorName) ? values.authorName : 'N/A',
+                  availability: values.availability,
+                  date: editMode ? values.date : new Date().toDateString()
+                };
+                setBookList((prevList) => {
+                  const updatedList = prevList.filter((book) => {
+                    return (
+                      book.bookName.toLowerCase() !== checkBookName[0].bookName.toLowerCase()
+                    );
+                  });
+                  return [...updatedList, newBook];
+                });
+                resetForm();
+                return;
+            }
+            else{
+              resetForm();
+              return;
+            }
+          }
         else{
           alert('Book already present');
           resetForm();
           return;
         }
       }
+      console.log("here"+values.date)
       
       const newBook = {
         bookName: values.bookName,
-        authorName: values.authorName,
-        availability: values.availability
+        authorName: (values.authorName) ? values.authorName : 'N/A',
+        availability: values.availability,
+        date: editMode ? values.date : new Date().toDateString()
       };
       setBookList((prevList) => [...prevList, newBook]);
       resetForm();
@@ -78,9 +88,9 @@ function Form() {
       if(!values.bookName){
         errors.bookName = '*required'
       }
-      if (!values.authorName && formik.touched.authorName) {
-        values.authorName = 'N/A';
-      }
+      // if (!values.authorName && formik.touched.authorName) {
+      //   values.authorName = 'N/A';
+      // }
       return errors
     }
   });
@@ -111,7 +121,8 @@ function Form() {
     formik.setValues({
       bookName: bookToEdit.bookName,
       authorName: bookToEdit.authorName,
-      availability: bookToEdit.availability
+      availability: bookToEdit.availability,
+      date: bookToEdit.date
     });
     const updatedList = [...bookList];
     updatedList.splice(index, 1);
@@ -132,6 +143,46 @@ function Form() {
       else setFilteredBookList(filteredList);
     }
   };
+
+  const filterAuthor = (e) => {
+    setSelectedAuthor(e.target.value); 
+    const searchAuthor = e.target.value.toLowerCase().trim()
+    // console.log(searchAuthor)
+    if (searchAuthor==='' || searchAuthor.localeCompare('all authors')===0) {
+      setFilteredBookList([]);
+    } 
+    else {
+      const filteredList = bookList.filter((book) => {
+      const authorName = book.authorName.toLowerCase();
+      return !authorName.localeCompare(searchAuthor)
+    })
+    if (filteredList.length === 0) setFilteredBookList([{ bookName: '', authorName: '' }]);
+    else setFilteredBookList(filteredList);
+  }}
+
+  const filterDate = e => {
+    console.log(e.target.value)
+    if(e.target.value==='') {setFilteredBookList([])}
+    else{
+      const searchDate = new Date(e.target.value);
+      console.log(searchDate)
+      const filteredBooks = bookList.filter(book => {
+        const bookDate = new Date(book.date);
+        // console.log(bookDate)
+        return bookDate.getDate() === searchDate.getDate() &&
+          bookDate.getMonth() === searchDate.getMonth() &&
+          bookDate.getFullYear() === searchDate.getFullYear();
+      });
+      if(filteredBooks.length === 0) setFilteredBookList([{bookName: '', authorName:''}])
+      else setFilteredBookList(filteredBooks)
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === 'return') {
+      e.target.blur();
+    }
+  }
 
   return (
     <div>
@@ -177,6 +228,34 @@ function Form() {
           placeholder="Search Books"
           onChange={handleSearch}
         />
+      </div>
+      <div className="filter-container">
+        <InputLabel htmlFor="filter-by-date">Filter By Date</InputLabel>
+          <TextField
+          variant='standard'
+          type="date"
+          id='filter-by-date'
+          name='filter-by-date'
+          // value={formik.values.date}
+          onChange={filterDate}
+          onKeyDown={handleKeyDown}
+        />
+        <InputLabel htmlFor="filter-by-author">Filter By Author</InputLabel>
+        <Select
+          variant="standard"
+          id="filter-by-author"
+          name="filter-by-author"
+          value={selectedAuthor}
+          onChange={filterAuthor}
+          onBlur={filterAuthor}
+        >
+          <MenuItem value="All Authors">All Authors</MenuItem>
+          {uniqueAuthors.map((author) => (
+            <MenuItem key={author} value={author}>
+              {author}
+            </MenuItem>
+          ))}
+        </Select>
       </div>
       {bookList.length > 0 && (
         <div className="table-container">
