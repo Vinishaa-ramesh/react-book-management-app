@@ -14,6 +14,7 @@ function Form() {
   const [editMode, setEditMode] = useState(false);
   const [uniqueAuthors, setUniqueAuthors] = useState([]);
   const [selectedAuthor, setSelectedAuthor] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
     localStorage.setItem('bookList', JSON.stringify(bookList));
@@ -145,38 +146,53 @@ function Form() {
   };
 
   const filterAuthor = (e) => {
-    setSelectedAuthor(e.target.value); 
-    const searchAuthor = e.target.value.toLowerCase().trim()
-    // console.log(searchAuthor)
-    if (searchAuthor==='' || searchAuthor.localeCompare('all authors')===0) {
-      setFilteredBookList([]);
-    } 
-    else {
-      const filteredList = bookList.filter((book) => {
+    setSelectedAuthor(e.target.value);
+    const searchAuthor = e.target.value.toLowerCase().trim();
+    const searchDate = selectedDate ? new Date(selectedDate) : null;
+  
+    const filteredBooks = bookList.filter((book) => {
       const authorName = book.authorName.toLowerCase();
-      return !authorName.localeCompare(searchAuthor)
-    })
-    if (filteredList.length === 0) setFilteredBookList([{ bookName: '', authorName: '' }]);
-    else setFilteredBookList(filteredList);
-  }}
-
-  const filterDate = e => {
-    console.log(e.target.value)
-    if(e.target.value==='') {setFilteredBookList([])}
-    else{
-      const searchDate = new Date(e.target.value);
-      console.log(searchDate)
-      const filteredBooks = bookList.filter(book => {
-        const bookDate = new Date(book.date);
-        // console.log(bookDate)
-        return bookDate.getDate() === searchDate.getDate() &&
-          bookDate.getMonth() === searchDate.getMonth() &&
-          bookDate.getFullYear() === searchDate.getFullYear();
-      });
-      if(filteredBooks.length === 0) setFilteredBookList([{bookName: '', authorName:''}])
-      else setFilteredBookList(filteredBooks)
+      const bookDate = new Date(book.date);
+      return (
+        (!searchAuthor || !searchAuthor.localeCompare('all authors') || authorName.includes(searchAuthor)) &&
+        (!searchDate ||
+          (bookDate.getDate() === searchDate.getDate() &&
+            bookDate.getMonth() === searchDate.getMonth() &&
+            bookDate.getFullYear() === searchDate.getFullYear()))
+      );
+    });
+  
+    if (filteredBooks.length === 0) {
+      setFilteredBookList([{ bookName: '', authorName: '' }]);
+    } else {
+      setFilteredBookList(filteredBooks);
     }
   };
+  
+  const filterDate = (e) => {
+    setSelectedDate(e.target.value);
+    const searchDate = e.target.value ? new Date(e.target.value) : null;
+    const searchAuthor = selectedAuthor.toLowerCase().trim();
+  
+    const filteredBooks = bookList.filter((book) => {
+      const authorName = book.authorName.toLowerCase()
+      const bookDate = new Date(book.date);
+      return (
+        (!searchAuthor || !searchAuthor.localeCompare('all authors') || authorName.includes(searchAuthor)) &&
+        (!searchDate ||
+          (bookDate.getDate() === searchDate.getDate() &&
+            bookDate.getMonth() === searchDate.getMonth() &&
+            bookDate.getFullYear() === searchDate.getFullYear()))
+      );
+    });
+  
+    if (filteredBooks.length === 0) {
+      setFilteredBookList([{ bookName: '', authorName: '' }]);
+    } else {
+      setFilteredBookList(filteredBooks);
+    }
+  };
+  
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === 'return') {
