@@ -6,12 +6,11 @@ import { Delete, Edit } from '@material-ui/icons';
 import { useFormik } from 'formik';
 import './newForm.css'
 
-function Form() {
-  const [bookList, setBookList] = useState(() => {
-    const localBookList = localStorage.getItem('bookList');
-    return localBookList ? JSON.parse(localBookList) : [];
-  });
+const api_key = 'https://crudcrud.com/api/5a747f054d3d41b09668ea12ccf124d9'
+// const api_key = 'https://crudcrud.com/api/00c25d37c4464519b3a510d2739231df'
 
+function FormApi() {
+  const [bookList, setBookList] = useState([]);
   const [filteredBookList, setFilteredBookList] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [uniqueAuthors, setUniqueAuthors] = useState([]);
@@ -19,8 +18,10 @@ function Form() {
   const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('bookList', JSON.stringify(bookList));
-  }, [bookList]);
+    fetch(api_key+'/books')
+      .then((response) => response.json())
+      .then((data) => setBookList(data));
+  }, []);
 
   useEffect(() => {
     const authors = [...new Set(bookList.map((book) => book.authorName))];
@@ -34,57 +35,90 @@ function Form() {
       availability: true,
       date: ''
     },
-    onSubmit: (values, { resetForm }) => {
-        const checkBookName = bookList.filter((book) => {
+    onSubmit: async (values, { resetForm }) => {
+      const checkBookName = bookList.filter((book) => {
         const bookName = book.bookName.toLowerCase();
         const authorName = book.authorName.toLowerCase();
-        return (
-          values.bookName.toLowerCase() === bookName
-        );
+        return values.bookName.toLowerCase() === bookName;
       });
+    
       if (checkBookName.length !== 0) {
-          if (!checkBookName[0].authorName.toLowerCase().localeCompare('n/a')) {
-            if(window.confirm('Replace author name?')){
-                const newBook = {
-                  bookName: values.bookName,
-                  authorName: (values.authorName) ? values.authorName : 'N/A',
-                  availability: values.availability,
-                  date: editMode ? values.date : new Date().toDateString()
-                };
-                setBookList((prevList) => {
-                  const updatedList = prevList.filter((book) => {
-                    return (
-                      book.bookName.toLowerCase() !== checkBookName[0].bookName.toLowerCase()
-                    );
-                  });
-                  return [...updatedList, newBook];
-                });
-                resetForm();
-                return;
-            }
-            else{
+        if (!checkBookName[0].authorName.toLowerCase().localeCompare('n/a')) {
+          if (window.confirm('Replace author name?')) {
+            const newBook = {
+              bookName: values.bookName,
+              authorName: values.authorName ? values.authorName : 'N/A',
+              availability: values.availability,
+              date: values.date,
+            };
+    
+            const updatedList = bookList.filter((book) => {
+              return book.bookName.toLowerCase() !== checkBookName[0].bookName.toLowerCase();
+            });
+    
+            try {
+              const response = await fetch(api_key+'/books', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newBook),
+              });
+    
+              if (!response.ok) {
+                throw new Error('Failed to add book');
+              }
+    
+              const data = await response.json();
+              setBookList(Object.values(data));
               resetForm();
-              return;
+            } catch (error) {
+              console.error('Error:', error);
             }
+    
+            resetForm();
+            return;
+          } else {
+            resetForm();
+            return;
           }
-        else{
+        } else {
           alert('Book already present');
           resetForm();
           return;
         }
       }
-      console.log("here"+values.date)
-      
+    
       const newBook = {
         bookName: values.bookName,
-        authorName: (values.authorName) ? values.authorName : 'N/A',
+        authorName: values.authorName ? values.authorName : 'N/A',
         availability: values.availability,
-        date: editMode ? values.date : new Date().toDateString()
+        date: values.date,
       };
-      setBookList((prevList) => [...prevList, newBook]);
-      resetForm();
-      setEditMode(false);
+    
+      try {
+        const response = await fetch(api_key+'/books', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newBook),
+        });
+    
+        if (!response.ok) {
+          throw new Error('Failed to add book');
+        }
+    
+        const data = await response.json();
+        console.log(Object.values(data))
+        setBookList(data);
+        resetForm();
+        setEditMode(false);
+      } catch (error) {
+        console.error('Error:', error);
+      }
     },
+    
     validate: values => {
       let errors = {}
 
@@ -109,16 +143,22 @@ function Form() {
     });
   };
 
-  const removeBook = (index) => {
+  const removeBook = async (id) => {
     if (!window.confirm('Are you sure to delete entry?')) return;
-    setBookList((prevList) => {
-      const updatedList = [...prevList];
-      updatedList.splice(index, 1);
-      return updatedList;
-    });
-  };
+  
+    try {
+      await fetch(api_key + `/books/${id}`, {
+        method: 'DELETE',
+      });
+      
+      const updatedList = bookList.filter((book) => book._id !== id);
+      setBookList(updatedList);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }  
 
-  const editBook = (index) => {
+  const editBook = async (index) => {
     setEditMode(true);
     const bookToEdit = bookList[index];
     formik.setValues({
@@ -127,10 +167,31 @@ function Form() {
       availability: bookToEdit.availability,
       date: bookToEdit.date
     });
-    const updatedList = [...bookList];
-    updatedList.splice(index, 1);
-    setBookList(updatedList);
-  };
+  
+    try {
+      const response = await fetch(api_key + `/books/${bookToEdit._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          bookName: formik.values.bookName,
+          authorName: formik.values.authorName,
+          availability: formik.values.availability,
+          date: formik.values.date
+        })
+      });
+      
+      const updatedList = [...bookList];
+      updatedList.splice(index, 1);
+      setBookList(updatedList);
+
+      formik.resetForm();
+      setEditMode(false);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };  
 
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase().trim();
@@ -229,6 +290,16 @@ function Form() {
             label="Author Name"
             className="textbox"
             value={formik.values.authorName}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          />
+          <TextField
+            type="date"
+            id='date'
+            name='date'
+            label='publishDate'
+            className='textbox'
+            value={formik.values.date}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
           />
@@ -374,4 +445,4 @@ function Form() {
   );
 }
 
-export default Form;
+export default FormApi;

@@ -4,10 +4,9 @@ body {
   }
   h2{
     color: blue;
-    font-family: ui-rounded;
     font-weight: 500px;
   }
-  
+ 
   .form-container {
     margin: 30px;
     /* display: flex; */
@@ -63,11 +62,14 @@ body {
   
   .edit-button {
     color: #075f92;
+    /* color: white !important; */
   }
   .form-element{
     display: block;
     align-items: right;
   }
+
+  
   .error{
     color: red;
     text-align: right;
@@ -77,6 +79,11 @@ body {
     display: flex;
     gap: 20px;
     justify-content: center;
-    height: 50px;
+    /* height: 50px; */
     vertical-align: middle;
+    margin-bottom: 50px;
+  }
+
+  .textbox{
+    display: block !important;
   }

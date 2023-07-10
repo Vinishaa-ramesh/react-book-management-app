@@ -1,0 +1,39 @@
+{
+  "books": [
+    {
+      "bookName": "dsgaA",
+      "authorName": "sfgaafn",
+      "availability": true,
+      "date": "2023-07-11",
+      "id": 2
+    },
+    {
+      "bookName": "asdbv",
+      "authorName": "avadajh",
+      "availability": true,
+      "date": "2023-07-03",
+      "id": 5
+    },
+    {
+      "bookName": "l;j",
+      "authorName": "mv",
+      "availability": true,
+      "date": "2023-07-04",
+      "id": 6
+    },
+    {
+      "bookName": "dsgaAac",
+      "authorName": "sdfa",
+      "availability": true,
+      "date": "2023-07-04",
+      "id": 7
+    },
+    {
+      "bookName": "argag",
+      "authorName": "asdgwe",
+      "availability": true,
+      "date": "2023-07-19",
+      "id": 8
+    }
+  ]
+}
