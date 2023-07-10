@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, InputLabel, Select, MenuItem } from '@mui/material';
+import { Modal, Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, InputLabel, Select, MenuItem, Dialog, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { IconButton } from '@material-ui/core';
-import { Delete, Edit } from '@material-ui/icons';
+import { Delete, Edit, Check, Close } from '@material-ui/icons';
 import { useFormik } from 'formik';
 import axios from 'axios';
 import './newForm.css';
@@ -12,7 +12,12 @@ function FormApi_npm() {
   const [filteredBookList, setFilteredBookList] = useState([]);
 
   const [selectedAuthor, setSelectedAuthor] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [searchValue, setSearchValue] = useState('')
+
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState('');
+
 
   useEffect(() => {
     fetchBooks();
@@ -153,16 +158,27 @@ function FormApi_npm() {
   };
 
   const removeBook = (id) => {
-    if (!window.confirm('Are you sure to delete the entry?')) return;
+    setSelectedBookId(id);
+    setDeleteConfirmationOpen(true);
+  };
 
+  const handleDeleteConfirmation = () => {
     axios
-      .delete(api_url + `/${id}`)
+      .delete(api_url + `/${selectedBookId}`)
       .then(() => {
-        setBookList((prevList) => prevList.filter((book) => book.id !== id));
+        setBookList((prevList) => prevList.filter((book) => book.id !== selectedBookId));
       })
       .catch((error) => {
         console.error('Error:', error);
       });
+
+    setDeleteConfirmationOpen(false);
+    setSelectedBookId('')
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmationOpen(false);
+    setSelectedBookId('')
   };
 
   const editBook = (id) => {
@@ -179,6 +195,7 @@ function FormApi_npm() {
 
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase().trim();
+    setSearchValue(e.target.value)
     if (searchValue === '') {
       setFilteredBookList([]);
     } else {
@@ -196,7 +213,7 @@ function FormApi_npm() {
   const filterAuthor = (e) => {
     console.log(e.target.value)
     setSelectedAuthor(e.target.value)
-    const searchAuthor = e.target.value.toLowerCase().trim();
+    const searchAuthor = e.target.value;
     const searchDate = selectedDate || undefined;
   
     axios
@@ -207,6 +224,7 @@ function FormApi_npm() {
         }
       })
       .then((res) => {
+        console.log(res)
         setFilteredBookList(res.data);
       })
       .catch((err) => {
@@ -240,6 +258,10 @@ function FormApi_npm() {
     }
   }
 
+  const clearFilter = () => {
+    setSelectedAuthor('')
+    setSelectedDate(null)
+  }
   return (
     <div>
       <Typography variant="h2">
@@ -299,8 +321,9 @@ function FormApi_npm() {
           type="date"
           id='filter-by-date'
           name='filter-by-date'
-          // value={formik.values.date}
+          value={selectedDate || ''}
           onChange={filterDate}
+          onBlur={filterDate}
           onKeyDown={handleKeyDown}
         />
         <InputLabel htmlFor="filter-by-author">Filter By Author</InputLabel>
@@ -319,6 +342,10 @@ function FormApi_npm() {
             </MenuItem>
           ))}
         </Select>
+
+        <Button variant='contained' className='clear-filter' onClick={clearFilter}>
+            Clear filter
+          </Button>
       </div>
       {bookList.length > 0 && (
         <div className="table-container">
@@ -333,7 +360,7 @@ function FormApi_npm() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredBookList.length > 0
+              {filteredBookList.length > 0 && (selectedAuthor || selectedDate || searchValue)
                 ? filteredBookList.map((book) => (
                   book.bookName !== '' && (
                     <TableRow key={book.id}>
@@ -350,12 +377,25 @@ function FormApi_npm() {
                         </div>
                       </TableCell>
                       <TableCell>
-                      <IconButton onClick={() => removeBook(book.id)}>
+                      {selectedBookId!=book.id && <div><IconButton onClick={() => removeBook(book.id)}>
                         <Delete className='delete-button'/>
                       </IconButton>
+                      </div>}
+                      {deleteConfirmationOpen && selectedBookId==book.id && (
+                          <div className="delete-confirmation">
+                            <div className="delete-confirmation-buttons">
+                              <IconButton onClick={handleDeleteConfirmation}>
+                                <Check/>
+                              </IconButton>
+                              <IconButton onClick={handleDeleteCancel}>
+                                <Close/>
+                              </IconButton>
+                            </div>
+                          </div>
+                        )}
                     </TableCell>
                     <TableCell>
-                      <IconButton onClick={() => editBook(book.if)}>
+                      <IconButton onClick={() => editBook(book.id)}>
                         <Edit className='edit-button'/>
                       </IconButton>
                     </TableCell>
@@ -377,15 +417,56 @@ function FormApi_npm() {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => removeBook(book.id)}>
-                        <Delete className='delete-button'/>
+                    <TableCell className='button-cell'>
+                      {selectedBookId!=book.id && 
+                      <div>
+                        <IconButton
+                        className="delete-button"
+                        onClick={() => removeBook(book.id)}
+                        size = "small"
+                      >
+                        <Delete/>
                       </IconButton>
+                      </div>}
+                      {deleteConfirmationOpen && selectedBookId==book.id && (
+
+                          // <div className="delete-confirmation">
+                          //   <div className="delete-confirmation-buttons">
+                          //     <IconButton onClick={handleDeleteConfirmation}>
+                          //       <Check/>
+                          //     </IconButton>
+                          //     <IconButton onClick={handleDeleteCancel}>
+                          //       <Close/>
+                          //     </IconButton>
+                          //   </div>
+                          // </div>
+                          <Dialog
+                          className='delete-confirm'
+                            open={deleteConfirmationOpen}
+                            onClose={handleDeleteCancel}
+                          >
+                            <DialogContent>
+                              <DialogContentText id="delete-confirm-text">
+                                Confirm delete?
+                              </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={handleDeleteCancel}>Cancel</Button>
+                              <Button onClick={handleDeleteConfirmation} autoFocus>
+                                Delete
+                              </Button>
+                            </DialogActions>
+                          </Dialog>
+                        )}
                     </TableCell>
-                    <TableCell>
-                      <><IconButton onClick={() => editBook(book.if)}>
-                        <Edit className='edit-button'/>
-                      </IconButton></>
+                    <TableCell className='button-cell'>
+                    <IconButton
+                        className="edit-button"
+                        onClick={() => editBook(book.id)}
+                        size = 'small'
+                      >
+                        <Edit/>
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}

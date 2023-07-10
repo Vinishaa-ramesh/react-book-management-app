@@ -32,12 +32,13 @@ body {
   
   .table-container th,
   .table-container td {
-    padding: 8px;
+    padding: 20px;
     /* text-align: center; */
     border-bottom: 1px solid aqua;
-    width: 33%;
+    width: 30%;
     color: darkblue;
   }
+  
   
   .table-container th {
     font-weight: bold;
@@ -57,12 +58,15 @@ body {
   }
   
   .delete-button {
-    color: red;
+    color: red !important;
   }
   
   .edit-button {
-    color: #075f92;
-    /* color: white !important; */
+    color: #075f92 !important;
+  }
+
+  .delete-confirmation-buttons{
+    gap: 10px;
   }
   .form-element{
     display: block;
@@ -86,4 +90,15 @@ body {
 
   .textbox{
     display: block !important;
+  }
+
+  .delete-confirmation-buttons{
+    display: inline-flex;
+    position: relative;
+    left: -20px;
+  }
+
+  dialog .delete-confirm{
+    min-width: 500px;
+    align-self: center;
   }
