@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, InputLabel, Select, MenuItem, Dialog, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import { IconButton } from '@material-ui/core';
-import { Delete, Edit, Check, Close } from '@material-ui/icons';
+import { Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, InputLabel, Select, MenuItem, Dialog, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Delete, Edit, Search} from '@material-ui/icons';
 import { useFormik } from 'formik';
 import axios from 'axios';
 import './newForm.css';
@@ -17,6 +16,14 @@ function FormApi_npm() {
 
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState('');
+
+  const [toggleDialog, setToggleDialog] = useState(false)
+  const [toggleBookId, setToggleBookId] = useState('')
+
+  const [bookNotFound, setBookNotFound] = useState(false)
+
+  const [authorChangeDialog, setAuthorChangeDialog] = useState(false)
+  const [authorReplace, setAuthorReplace] = useState('')
 
 
   useEffect(() => {
@@ -50,18 +57,15 @@ function FormApi_npm() {
       date: ''
     },
     onSubmit: (values, { resetForm }) => {
+
+      //check if book name is already present
       const checkBookName = bookList.filter((book) => {
         const bookName = book.bookName.toLowerCase();
         return values.bookName.toLowerCase() === bookName;
       });
-    
+
+      // edit mode
       if (values.id){
-        if (checkBookName.length === 0) {
-          alert('Book not found for editing');
-          resetForm();
-          return;
-        }
-    
         axios
           .put(api_url + `/${checkBookName[0].id}`, {
             bookName: values.bookName,
@@ -76,37 +80,26 @@ function FormApi_npm() {
           .catch((error) => {
             console.log('Error: ' + error);
           });
-      } else {
+      } 
+      
+      // new book
+      else {
         if (checkBookName.length !== 0) {
+          // book present without author name
           if (!checkBookName[0].authorName.toLowerCase().localeCompare('n/a')) {
-            if (window.confirm('Replace author name?')) {
-              axios
-                .put(api_url + `/${checkBookName[0].id}`, {
-                  bookName: values.bookName,
-                  authorName: values.authorName ? values.authorName : 'N/A',
-                  availability: values.availability,
-                  date: values.date
-                })
-                .then((res) => {
-                  fetchBooks();
-                  resetForm();
-                })
-                .catch((error) => {
-                  console.log('Error: ' + error);
-                });
-    
-              return;
-            } else {
-              resetForm();
-              return;
-            }
-          } else {
+            setAuthorChangeDialog(true)
+            setAuthorReplace(checkBookName[0].id)
+            return;
+          } 
+          // book already present
+          else {
             alert('Book already present');
             resetForm();
             return;
           }
         }
     
+        //add new book
         axios
           .post(api_url, {
             bookName: values.bookName,
@@ -126,6 +119,8 @@ function FormApi_npm() {
     validate: (values) => {
       let errors = {};
 
+      //make bookname and date required fields
+
       if (!values.bookName) {
         errors.bookName = '*required';
       }
@@ -137,25 +132,68 @@ function FormApi_npm() {
     }
   });
 
-  const toggleAvailability = (id) => {
-    if (!window.confirm('Are you sure to proceed?')) return;
+
+  //replace author function
+
+  const handleAuthorChangeClose = () => {
+    setAuthorChangeDialog(false)
+    formik.resetForm()
+  }
+
+  const handleAuthorChangeConfirm = () => {
+    setAuthorChangeDialog(false)
+      axios
+        .put(api_url + `/${authorReplace}`, {
+          bookName: formik.values.bookName,
+          authorName: formik.values.authorName ? formik.values.authorName : 'N/A',
+          availability: formik.values.availability,
+          date: formik.values.date
+        })
+        .then((res) => {
+          fetchBooks();
+          formik.resetForm();
+          setAuthorReplace(false)
+        })
+        .catch((error) => {
+          console.log('Error: ' + error);
+        });
+  }
+
+  //toggle functionality
+
+  const handleToggleCancel = () => {
+    setToggleDialog(false)
+  }
+
+  const handleToggleClick = (id) => {
+    setToggleDialog(true)
+    setToggleBookId(id)
+  }
+  const toggleAvailability = () => {
 
     const updatedBookList = bookList.map((book) => {
-      if (book.id === id) {
+      if (book.id === toggleBookId) {
         return { ...book, availability: !book.availability };
       }
       return book;
     });
 
     axios
-      .put(api_url + `/${id}`, updatedBookList.find((book) => book.id === id))
+      .put(api_url + `/${toggleBookId}`, updatedBookList.find((book) => book.id === toggleBookId))
       .then(() => {
         setBookList(updatedBookList);
+        setToggleDialog(false)
       })
       .catch((error) => {
         console.error('Error:', error);
       });
   };
+
+
+  // end of toggle functionality
+
+
+  // delete book functionality
 
   const removeBook = (id) => {
     setSelectedBookId(id);
@@ -181,6 +219,10 @@ function FormApi_npm() {
     setSelectedBookId('')
   };
 
+  // end of delete book functionality
+
+  // edit book functionality
+
   const editBook = (id) => {
     const bookToEdit = bookList.find((book) => book.id === id);
     formik.setValues({
@@ -193,6 +235,10 @@ function FormApi_npm() {
 
   };
 
+  // end of edit book functionality
+
+  // global search
+
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase().trim();
     setSearchValue(e.target.value)
@@ -203,12 +249,15 @@ function FormApi_npm() {
         .get(api_url + `?q=${searchValue}`)
         .then((res) => {
           setFilteredBookList(res.data);
+          if(res.data.length===0) setBookNotFound(true)
         })
         .catch((err) => {
           console.log('Error:', err);
         });
     }
   };
+
+  // filter using author name
 
   const filterAuthor = (e) => {
     console.log(e.target.value)
@@ -226,12 +275,15 @@ function FormApi_npm() {
       .then((res) => {
         console.log(res)
         setFilteredBookList(res.data);
+        if(res.data.length===0 && searchAuthor) setBookNotFound(true)
       })
       .catch((err) => {
         console.log('Error:', err);
       });
   };
   
+  //filter using publish date
+
   const filterDate = (e) => {
     const searchDate = e.target.value;
     setSelectedDate(searchDate)
@@ -246,6 +298,7 @@ function FormApi_npm() {
       })
       .then((res) => {
         setFilteredBookList(res.data);
+        if(res.data.length===0) setBookNotFound(true)
       })
       .catch((err) => {
         console.log('Error:', err);
@@ -258,15 +311,28 @@ function FormApi_npm() {
     }
   }
 
+  // when clear filter button is clicked
+
   const clearFilter = () => {
     setSelectedAuthor('')
     setSelectedDate(null)
   }
+
+  // when book not found in filter method
+  const handleBookNotFoundClose = () => {
+    setBookNotFound(false)
+    clearFilter()
+  }
   return (
     <div>
-      <Typography variant="h2">
-        <span className="head">Book management</span>
-      </Typography>
+      {/* title bar */}
+      <div className='title-bar'>
+        <Typography variant="h2">
+          <span className="head">Book management</span>
+        </Typography>
+      </div>
+
+      {/* form to add book */}
       <div className="form-container">
         <form onSubmit={formik.handleSubmit}>
           <div className="form-element">
@@ -276,10 +342,12 @@ function FormApi_npm() {
               name="bookName"
               label="Book Name"
               className="textbox"
+              placeholder='Enter Book name...'
               value={formik.values.bookName}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}error={formik.touched.bookName && Boolean(formik.errors.bookName)}
-              helperText={formik.touched.bookName && formik.errors.bookName}            
+              helperText={formik.touched.bookName && formik.errors.bookName} 
+              InputLabelProps={ {shrink: true} }                
             />
           </div>
           <TextField
@@ -288,22 +356,25 @@ function FormApi_npm() {
             name="authorName"
             label="Author Name"
             className="textbox"
+            placeholder='Enter Author name...'
             value={formik.values.authorName}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            InputLabelProps={ {shrink: true} }     
           />
-          <TextField
-            type="date"
-            id="date"
-            name="date"
-            label="publishDate"
-            className="textbox"
-            value={formik.values.date}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.date && Boolean(formik.errors.date)}
-            helperText={formik.touched.date && formik.errors.date}          
-          />
+              <TextField
+                id="date"
+                name="date"
+                label="publishDate"
+                type="date"
+                className="textbox"
+                value={formik.values.date || null}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.date && Boolean(formik.errors.date)}
+                helperText={formik.touched.date && formik.errors.date}
+                InputLabelProps={ {shrink: true} }         
+              />
           <br />
           <br />
           <Button type="submit" variant="contained" className="buttonSubmit">
@@ -311,9 +382,35 @@ function FormApi_npm() {
           </Button>
         </form>
       </div>
+
+      {/* author replace dialog */}
+      <Dialog aria-describedby='author-change'
+                open={authorChangeDialog}
+                onClose={handleAuthorChangeClose}>
+                <DialogContent>
+                  <DialogContentText id='author-change'>
+                    Book title found without author. Replace Author name?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleAuthorChangeClose}>No</Button>
+                  <Button onClick={handleAuthorChangeConfirm}>Yes</Button>
+                </DialogActions>
+              </Dialog>
+      
+    
+      {/* search field */}
       <div className="search-container">
-        <TextField variant="standard" type="text" label="Search Books" placeholder="Search Books" onChange={handleSearch} />
+        <Search/>
+        <TextField 
+          variant="standard" 
+          type="text" 
+          label="Search Books" 
+          placeholder="Search..."
+          onChange={handleSearch} />
       </div>
+
+      {/* filter options */}
       <div className="filter-container">
         <InputLabel htmlFor="filter-by-date">Filter By Date</InputLabel>
           <TextField
@@ -331,6 +428,7 @@ function FormApi_npm() {
           variant="standard"
           id="filter-by-author"
           name="filter-by-author"
+          className='drop-down-author'
           value={selectedAuthor || ''}
           onChange={filterAuthor}
           onBlur={filterAuthor}
@@ -347,6 +445,8 @@ function FormApi_npm() {
             Clear filter
           </Button>
       </div>
+
+      {/* table to display books */}
       {bookList.length > 0 && (
         <div className="table-container">
           <Table>
@@ -360,8 +460,9 @@ function FormApi_npm() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredBookList.length > 0 && (selectedAuthor || selectedDate || searchValue)
-                ? filteredBookList.map((book) => (
+              {/* when filter is applied */}
+              {filteredBookList.length > 0 && (selectedAuthor || selectedDate || searchValue) ? 
+              filteredBookList.map((book) => (
                   book.bookName !== '' && (
                     <TableRow key={book.id}>
                       <TableCell>{book.bookName}</TableCell>
@@ -370,38 +471,65 @@ function FormApi_npm() {
                         <div className="button-container">
                           <Button
                             className={book.availability ? 'available' : 'not-available'}
-                            onClick={() => toggleAvailability(book.id)}
+                            onClick={() => handleToggleClick(book.id)}
                           >
                             {book.availability ? 'Available' : 'Not Available'}
                           </Button>
                         </div>
+                        {/* when toggle button is clicked */}
+                        {toggleDialog && (
+                          <Dialog aria-describedby='toggle-dialog-text'
+                            open={toggleDialog}
+                            onClose={handleToggleCancel}>
+                            <DialogContent>
+                            <DialogContentText id='toggle-dialog-text'>
+                              Do you want to proceed?
+                            </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={handleToggleCancel}>Cancel</Button>
+                              <Button onClick={toggleAvailability}>Confirm</Button>
+                            </DialogActions>
+                          </Dialog>
+                        )}
                       </TableCell>
                       <TableCell>
-                      {selectedBookId!=book.id && <div><IconButton onClick={() => removeBook(book.id)}>
+                      {selectedBookId!=book.id && <div><div onClick={() => removeBook(book.id)}>
                         <Delete className='delete-button'/>
-                      </IconButton>
+                      </div>
                       </div>}
+                      {/* when delete button is clicked */}
                       {deleteConfirmationOpen && selectedBookId==book.id && (
-                          <div className="delete-confirmation">
-                            <div className="delete-confirmation-buttons">
-                              <IconButton onClick={handleDeleteConfirmation}>
-                                <Check/>
-                              </IconButton>
-                              <IconButton onClick={handleDeleteCancel}>
-                                <Close/>
-                              </IconButton>
-                            </div>
-                          </div>
-                        )}
+                      <Dialog
+                        open={deleteConfirmationOpen}
+                        onClose={handleDeleteCancel}
+                        aria-describedby='delete-dialog-description'
+                        sx={{minWidth: 500,}}
+                      >
+                        <DialogContent>
+                          <DialogContentText id="delete-dialog-description">
+                            Confirm delete?
+                          </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleDeleteCancel}>Cancel</Button>
+                          <Button onClick={handleDeleteConfirmation} autoFocus>
+                            Delete
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <IconButton onClick={() => editBook(book.id)}>
+                      <div onClick={() => editBook(book.id)}>
                         <Edit className='edit-button'/>
-                      </IconButton>
+                      </div>
                     </TableCell>
                     </TableRow>
-                  )
-                ))
+                )))
+
+                // default condition - display all books
+
                 : bookList.map((book) => (
                   <TableRow key={book.id}>
                     <TableCell>{book.bookName}</TableCell>
@@ -411,42 +539,47 @@ function FormApi_npm() {
                         <Button
                           variant='contained'
                           className={book.availability ? 'available' : 'not-available'}
-                          onClick={() => toggleAvailability(book.id)}
+                          onClick={() => handleToggleClick(book.id)}
                         >
                           {book.availability ? 'Available' : 'Not Available'}
                         </Button>
                       </div>
+                      {toggleDialog && (
+                          <Dialog aria-describedby='toggle-dialog-text'
+                            open={toggleDialog}
+                            onClose={handleToggleCancel}>
+                            <DialogContent>
+                            <DialogContentText id='toggle-dialog-text'>
+                              Do you want to proceed?
+                            </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={handleToggleCancel}>Cancel</Button>
+                              <Button onClick={toggleAvailability}>Confirm</Button>
+                            </DialogActions>
+                          </Dialog>
+                        )}
                     </TableCell>
                     <TableCell className='button-cell'>
                       {selectedBookId!=book.id && 
                       <div>
-                        <IconButton
+                        <div
                         className="delete-button"
                         onClick={() => removeBook(book.id)}
                         size = "small"
                       >
                         <Delete/>
-                      </IconButton>
+                      </div>
                       </div>}
                       {deleteConfirmationOpen && selectedBookId==book.id && (
-
-                          // <div className="delete-confirmation">
-                          //   <div className="delete-confirmation-buttons">
-                          //     <IconButton onClick={handleDeleteConfirmation}>
-                          //       <Check/>
-                          //     </IconButton>
-                          //     <IconButton onClick={handleDeleteCancel}>
-                          //       <Close/>
-                          //     </IconButton>
-                          //   </div>
-                          // </div>
                           <Dialog
-                          className='delete-confirm'
                             open={deleteConfirmationOpen}
                             onClose={handleDeleteCancel}
+                            aria-describedby='delete-dialog-description'
+                            sx={{minWidth: 500,}}
                           >
                             <DialogContent>
-                              <DialogContentText id="delete-confirm-text">
+                              <DialogContentText id="delete-dialog-description">
                                 Confirm delete?
                               </DialogContentText>
                             </DialogContent>
@@ -460,13 +593,13 @@ function FormApi_npm() {
                         )}
                     </TableCell>
                     <TableCell className='button-cell'>
-                    <IconButton
+                    <div
                         className="edit-button"
                         onClick={() => editBook(book.id)}
                         size = 'small'
                       >
                         <Edit/>
-                      </IconButton>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -474,6 +607,14 @@ function FormApi_npm() {
           </Table>
         </div>
       )}
+        {/* book not found dialog */}
+        <Dialog open={bookNotFound} onClose={handleBookNotFoundClose}>
+          <DialogContent>
+            <DialogContentText>
+              No Book Found!
+            </DialogContentText>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }

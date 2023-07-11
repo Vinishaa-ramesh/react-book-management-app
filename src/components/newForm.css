@@ -13,12 +13,17 @@ body {
   }
 
   .form-container form{
-    display: flex;
+    /* display: flex; */
+    display: inline-flex;
     gap: 15px;
     justify-content: center;
+    margin: 10px;
   }
   .search-container{
     margin-bottom: 30px;
+  }
+  .search-container {
+    padding: 10px 0;
   }
   .search-container TextField{
     background-color: white;
@@ -38,7 +43,6 @@ body {
     width: 30%;
     color: darkblue;
   }
-  
   
   .table-container th {
     font-weight: bold;
@@ -96,9 +100,4 @@ body {
     display: inline-flex;
     position: relative;
     left: -20px;
-  }
-
-  dialog .delete-confirm{
-    min-width: 500px;
-    align-self: center;
   }
