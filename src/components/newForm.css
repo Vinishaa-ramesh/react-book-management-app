@@ -1,103 +1,202 @@
-body {
-    margin: 50px;
-    background-color: #d1ecfc;
-  }
-  h2{
-    color: blue;
-    font-weight: 500px;
-  }
- 
-  .form-container {
-    margin: 30px;
-    /* display: flex; */
-  }
+/* 
+ffeadd
+fcaeae
+ff8989
+ff6666
+ */
 
-  .form-container form{
-    /* display: flex; */
-    display: inline-flex;
-    gap: 15px;
-    justify-content: center;
-    margin: 10px;
-  }
-  .search-container{
-    margin-bottom: 30px;
-  }
-  .search-container {
-    padding: 10px 0;
-  }
-  .search-container TextField{
-    background-color: white;
-  }
+ .main-container{
+  margin:0;
+  padding: 0;
+ }
+ body {
+  /* margin: 50px; */
+  background-color: #f6acac;
+  background:  linear-gradient(to right, rgb(91, 91, 91) -100px, white );
+}
 
-  .buttonSubmit {
-    color: darkblue;
-    background-color: #79c6f3;
-    font-size: 13px;
-  }
-  
-  .table-container th,
-  .table-container td {
-    padding: 20px;
-    /* text-align: center; */
-    border-bottom: 1px solid aqua;
-    width: 30%;
-    color: darkblue;
-  }
-  
-  .table-container th {
-    font-weight: bold;
-  }
-  
-  .button-container button {
-    color: white;
-    font-size: 10px;
-  }
-  
-  .button-container button.available {
-    background-color: green;
-  }
-  
-  .button-container button.not-available {
-    background-color: red;
-  }
-  
-  .delete-button {
-    color: red !important;
-  }
-  
-  .edit-button {
-    color: #075f92 !important;
-  }
+.search-container{
+  display: flex;
+  align-items: center;
+}
 
-  .delete-confirmation-buttons{
-    gap: 10px;
-  }
-  .form-element{
-    display: block;
-    align-items: right;
-  }
+.search-container div{
+  /* margin-bottom: 30px; */
+  color: white;
+}
+.title-bar{
+  display: flex;
+  align-items: center;
+  padding-left: 50px;
+  width: 100%;
+  gap: 20px;
+  background-color: rgb(50, 48, 48);
+  color: white;
+  text-align: left;
+  min-height: 100px;
+}
+.title-bar h2{
+  font-size: 30px;
+  width: 65%;
+}
 
-  
-  .error{
-    color: red;
-    text-align: right;
-    font-size: 12px;
-  }
-  .filter-container{
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    /* height: 50px; */
-    vertical-align: middle;
-    margin-bottom: 50px;
-  }
+.search-field{
+  color: white;
+}
 
-  .textbox{
-    display: block !important;
-  }
+.form-container {
+  margin: 30px;
+  /* display: flex; */
+}
 
-  .delete-confirmation-buttons{
-    display: inline-flex;
-    position: relative;
-    left: -20px;
-  }
+.form-container form{
+  /* display: flex; */
+  display: inline-flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 10px;
+}
+.search-container svg{
+  padding: 20px 0;
+  margin-right: 10px;
+  color: white;
+}
+
+.buttonSubmit {
+  color: darkblue;
+  background-color: #79c6f3;
+  font-size: 13px;
+}
+
+.table-container{
+  background-color: rgb(50, 48, 48);
+  border-radius: 20px;
+  box-shadow: 0 0 30px 5px #78797a;
+  width: 90%;
+  margin: auto;
+  margin-bottom: 30px;
+}
+.table-container th,
+.table-container td {
+  padding: 20px;
+  /* text-align: center; */
+  border-bottom: 1px solid #515151;
+  width: 25%;
+  color: white;
+  justify-items: center;
+  text-align: center;
+}
+.MuiButtonBase-root{
+  display: block !important;
+}
+
+.table-container th {
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+}
+
+.button-container{
+  display: flex;
+  justify-content: center;
+}
+.button-container button {
+  /* color: black; */
+  font-size: 10px;
+}
+
+.button-container button.available {
+  background-color: rgb(255, 255, 255);
+  color: black;
+}
+
+.button-container button.not-available {
+  background-color: rgb(0, 0, 0);
+  color: white;
+}
+
+.delete-button {
+  color: rgb(238, 106, 106) !important;
+  cursor: pointer;
+}
+
+.edit-button {
+  color: #3e80a6 !important;
+  cursor: pointer;
+}
+
+.delete-confirmation-buttons{
+  gap: 10px;
+}
+.form-element{
+  display: block;
+  align-items: right;
+}
+
+
+.error{
+  color: red;
+  text-align: right;
+  font-size: 12px;
+}
+.filter-container{
+  display: flex;
+  gap: 20px;
+  justify-content: right;
+  align-items: center;
+  /* height: 50px; */
+  vertical-align: middle;
+  margin-right: 35%;
+  margin-bottom: 20px;
+  max-height: 50px;
+}
+
+.filter-container label{
+  font-size: 12px;
+}
+
+.filter-container div{
+  font-size: 12px;
+  background-color: rgb(177, 177, 177);
+  border-radius: 5px;
+}
+
+.filter-container button{
+  border-radius: 20px;
+  max-width:10px;
+  color: rgb(66, 66, 66);
+}
+.textbox{
+  display: block !important;
+}
+
+.delete-confirmation-buttons{
+  display: inline-flex;
+  position: relative;
+  left: -20px;
+}
+
+.form-container button{
+  background-color: rgb(52, 52, 52);
+}
+
+.MuiDialogContent-root{
+  width: 250px;
+  background-color: rgb(50, 48, 48);
+  height: 40px;
+}
+
+#delete-dialog-description, #author-change, #toggle-dialog-text{
+  color: white !important;
+}
+
+.MuiDialogActions-root{
+  background-color: rgb(50, 48, 48);
+}
+
+.MuiDialogActions-root button{
+  background-color: rgb(122, 122, 122);
+  color: white;
+  font-size: 12px;
+  max-height: 35px;
+}

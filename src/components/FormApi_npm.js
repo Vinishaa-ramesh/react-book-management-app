@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, InputLabel, Select, MenuItem, Dialog, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import { Delete, Edit, Search} from '@material-ui/icons';
+import { Delete, Edit, Search, LocalLibrary, Refresh} from '@material-ui/icons';
 import { useFormik } from 'formik';
 import axios from 'axios';
 import './newForm.css';
+// import { searchSpace } from './HeaderSpace'
 
 function FormApi_npm() {
   const api_url = 'http://localhost:3000/books';
@@ -182,7 +183,9 @@ function FormApi_npm() {
       .put(api_url + `/${toggleBookId}`, updatedBookList.find((book) => book.id === toggleBookId))
       .then(() => {
         setBookList(updatedBookList);
+        // filterAuthor();
         setToggleDialog(false)
+        setToggleBookId('')
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -241,6 +244,7 @@ function FormApi_npm() {
 
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase().trim();
+    // console.log("in search", searchSpace)
     setSearchValue(e.target.value)
     if (searchValue === '') {
       setFilteredBookList([]);
@@ -249,7 +253,10 @@ function FormApi_npm() {
         .get(api_url + `?q=${searchValue}`)
         .then((res) => {
           setFilteredBookList(res.data);
-          if(res.data.length===0) setBookNotFound(true)
+          if(res.data.length===0 && e.type=='blur'){
+            setBookNotFound(true)
+            setSearchValue('')
+          }
         })
         .catch((err) => {
           console.log('Error:', err);
@@ -324,14 +331,25 @@ function FormApi_npm() {
     clearFilter()
   }
   return (
-    <div>
+    <div className='main-container'>
       {/* title bar */}
       <div className='title-bar'>
+        <LocalLibrary fontSize='large'/>
         <Typography variant="h2">
           <span className="head">Book management</span>
         </Typography>
+        <div className="search-container">
+            <Search/>
+            <TextField 
+            variant="standard" 
+            type="text" 
+            sx={{borderBottom: 1}}
+            placeholder="Search Books..."
+            onKeyDown={handleKeyDown}
+            onBlur={handleSearch}
+            onChange={handleSearch} />
+        </div>
       </div>
-
       {/* form to add book */}
       <div className="form-container">
         <form onSubmit={formik.handleSubmit}>
@@ -397,24 +415,11 @@ function FormApi_npm() {
                   <Button onClick={handleAuthorChangeConfirm}>Yes</Button>
                 </DialogActions>
               </Dialog>
-      
-    
-      {/* search field */}
-      <div className="search-container">
-        <Search/>
-        <TextField 
-          variant="standard" 
-          type="text" 
-          label="Search Books" 
-          placeholder="Search..."
-          onChange={handleSearch} />
-      </div>
 
       {/* filter options */}
       <div className="filter-container">
         <InputLabel htmlFor="filter-by-date">Filter By Date</InputLabel>
           <TextField
-          variant='standard'
           type="date"
           id='filter-by-date'
           name='filter-by-date'
@@ -425,7 +430,6 @@ function FormApi_npm() {
         />
         <InputLabel htmlFor="filter-by-author">Filter By Author</InputLabel>
         <Select
-          variant="standard"
           id="filter-by-author"
           name="filter-by-author"
           className='drop-down-author'
@@ -440,9 +444,8 @@ function FormApi_npm() {
             </MenuItem>
           ))}
         </Select>
-
-        <Button variant='contained' className='clear-filter' onClick={clearFilter}>
-            Clear filter
+        <Button  onClick={clearFilter}>
+        <Refresh/>
           </Button>
       </div>
 
@@ -454,6 +457,7 @@ function FormApi_npm() {
               <TableRow>
                 <TableCell>Book</TableCell>
                 <TableCell>Author</TableCell>
+                <TableCell>Publish Date</TableCell>
                 <TableCell>Availability</TableCell>
                 <TableCell></TableCell>
                 <TableCell></TableCell>
@@ -467,6 +471,7 @@ function FormApi_npm() {
                     <TableRow key={book.id}>
                       <TableCell>{book.bookName}</TableCell>
                       <TableCell>{book.authorName}</TableCell>
+                      <TableCell>{book.date}</TableCell>
                       <TableCell>
                         <div className="button-container">
                           <Button
@@ -534,6 +539,7 @@ function FormApi_npm() {
                   <TableRow key={book.id}>
                     <TableCell>{book.bookName}</TableCell>
                     <TableCell>{book.authorName}</TableCell>
+                      <TableCell>{book.date}</TableCell>
                     <TableCell>
                       <div className="button-container">
                         <Button
