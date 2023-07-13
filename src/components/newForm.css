@@ -37,7 +37,7 @@ ff6666
 }
 .title-bar h2{
   font-size: 30px;
-  width: 65%;
+  width: 70%;
 }
 
 .search-field{
@@ -146,8 +146,8 @@ ff6666
   align-items: center;
   /* height: 50px; */
   vertical-align: middle;
-  margin-right: 35%;
-  margin-bottom: 20px;
+  margin-right: 30%;
+  margin-bottom: 10px;
   max-height: 50px;
 }
 
@@ -159,6 +159,7 @@ ff6666
   font-size: 12px;
   background-color: rgb(177, 177, 177);
   border-radius: 5px;
+  min-width: 60px;
 }
 
 .filter-container button{
@@ -178,6 +179,7 @@ ff6666
 
 .form-container button{
   background-color: rgb(52, 52, 52);
+  max-height: 55px;
 }
 
 .MuiDialogContent-root{
@@ -199,4 +201,9 @@ ff6666
   color: white;
   font-size: 12px;
   max-height: 35px;
+}
+
+
+.MuiDialogContent-root .MuiTypography-root{ 
+  color: white;
 }

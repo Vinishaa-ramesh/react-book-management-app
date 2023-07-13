@@ -43,7 +43,7 @@ function FormApi_npm() {
       .get(api_url)
       .then((res) => {
         setBookList(res.data);
-        console.log(res.data);
+        //console.log(res.data);
       })
       .catch((err) => {
         console.log('Error:', err);
@@ -64,17 +64,18 @@ function FormApi_npm() {
         const bookName = book.bookName.toLowerCase();
         return values.bookName.toLowerCase() === bookName;
       });
-
+      console.log(values)
+      
       // edit mode
       if (values.id){
         axios
-          .put(api_url + `/${checkBookName[0].id}`, {
+          .put(api_url + `/${values.id}`, {
             bookName: values.bookName,
             authorName: values.authorName ? values.authorName : 'N/A',
             availability: values.availability,
             date: values.date
           })
-          .then((res) => {
+          .then(() => {
             fetchBooks();
             resetForm();
           })
@@ -90,6 +91,7 @@ function FormApi_npm() {
           if (!checkBookName[0].authorName.toLowerCase().localeCompare('n/a')) {
             setAuthorChangeDialog(true)
             setAuthorReplace(checkBookName[0].id)
+            resetForm();
             return;
           } 
           // book already present
@@ -110,6 +112,7 @@ function FormApi_npm() {
           })
           .then((res) => {
             fetchBooks();
+            values.date=''
             resetForm();
           })
           .catch((err) => {
@@ -182,7 +185,7 @@ function FormApi_npm() {
     axios
       .put(api_url + `/${toggleBookId}`, updatedBookList.find((book) => book.id === toggleBookId))
       .then(() => {
-        setBookList(updatedBookList);
+        setBookList(updatedBookList, [filterBooks(selectedAuthor, selectedDate)]);
         // filterAuthor();
         setToggleDialog(false)
         setToggleBookId('')
@@ -207,7 +210,7 @@ function FormApi_npm() {
     axios
       .delete(api_url + `/${selectedBookId}`)
       .then(() => {
-        setBookList((prevList) => prevList.filter((book) => book.id !== selectedBookId));
+        setBookList((prevList) => prevList.filter((book) => book.id !== selectedBookId), [filterBooks(selectedAuthor, selectedDate)]);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -229,7 +232,7 @@ function FormApi_npm() {
   const editBook = (id) => {
     const bookToEdit = bookList.find((book) => book.id === id);
     formik.setValues({
-      id: bookToEdit.id,
+      id: id,
       bookName: bookToEdit.bookName,
       authorName: bookToEdit.authorName,
       availability: bookToEdit.availability,
@@ -253,7 +256,7 @@ function FormApi_npm() {
         .get(api_url + `?q=${searchValue}`)
         .then((res) => {
           setFilteredBookList(res.data);
-          if(res.data.length===0 && e.type=='blur'){
+          if(res.data.length===0 && e.type==='blur'){
             setBookNotFound(true)
             setSearchValue('')
           }
@@ -264,13 +267,10 @@ function FormApi_npm() {
     }
   };
 
-  // filter using author name
-
-  const filterAuthor = (e) => {
-    console.log(e.target.value)
-    setSelectedAuthor(e.target.value)
-    const searchAuthor = e.target.value;
-    const searchDate = selectedDate || undefined;
+  //filter books option
+  const filterBooks = (author, date) => {
+    const searchAuthor = author || undefined;
+    const searchDate = date || undefined;
   
     axios
       .get(api_url, {
@@ -282,34 +282,22 @@ function FormApi_npm() {
       .then((res) => {
         console.log(res)
         setFilteredBookList(res.data);
-        if(res.data.length===0 && searchAuthor) setBookNotFound(true)
+        if(res.data.length===0 && (searchAuthor || searchDate)) setBookNotFound(true)
       })
       .catch((err) => {
         console.log('Error:', err);
       });
+  }
+  // filter using author name
+
+  const filterAuthor = (e) => {
+    setSelectedAuthor(e.target.value, filterBooks(e.target.value, selectedDate))
   };
   
   //filter using publish date
 
   const filterDate = (e) => {
-    const searchDate = e.target.value;
-    setSelectedDate(searchDate)
-    const searchAuthor = selectedAuthor || undefined;
-  
-    axios
-      .get(api_url, {
-        params: {
-          authorName: searchAuthor,
-          date: searchDate
-        }
-      })
-      .then((res) => {
-        setFilteredBookList(res.data);
-        if(res.data.length===0) setBookNotFound(true)
-      })
-      .catch((err) => {
-        console.log('Error:', err);
-      });
+    setSelectedDate(e.target.value, filterBooks(selectedAuthor, e.target.value))
   };  
 
   const handleKeyDown = (e) => {
@@ -433,6 +421,7 @@ function FormApi_npm() {
           id="filter-by-author"
           name="filter-by-author"
           className='drop-down-author'
+          placeholder='filter'
           value={selectedAuthor || ''}
           onChange={filterAuthor}
           onBlur={filterAuthor}
@@ -499,12 +488,12 @@ function FormApi_npm() {
                         )}
                       </TableCell>
                       <TableCell>
-                      {selectedBookId!=book.id && <div><div onClick={() => removeBook(book.id)}>
+                      {selectedBookId!==book.id && <div><div onClick={() => removeBook(book.id)}>
                         <Delete className='delete-button'/>
                       </div>
                       </div>}
                       {/* when delete button is clicked */}
-                      {deleteConfirmationOpen && selectedBookId==book.id && (
+                      {deleteConfirmationOpen && selectedBookId===book.id && (
                       <Dialog
                         open={deleteConfirmationOpen}
                         onClose={handleDeleteCancel}
@@ -567,7 +556,7 @@ function FormApi_npm() {
                         )}
                     </TableCell>
                     <TableCell className='button-cell'>
-                      {selectedBookId!=book.id && 
+                      {selectedBookId!==book.id && 
                       <div>
                         <div
                         className="delete-button"
@@ -577,7 +566,7 @@ function FormApi_npm() {
                         <Delete/>
                       </div>
                       </div>}
-                      {deleteConfirmationOpen && selectedBookId==book.id && (
+                      {deleteConfirmationOpen && selectedBookId===book.id && (
                           <Dialog
                             open={deleteConfirmationOpen}
                             onClose={handleDeleteCancel}
